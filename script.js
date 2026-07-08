@@ -5,12 +5,17 @@
     let selectedIcon = 'fa-book';
     let selectedColor = '#6c5ce7';
     let editingHabitId = null;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
 
     // DOM Elements
     const habitsContainer = document.getElementById('habitsContainer');
     const calendarContainer = document.getElementById('calendarContainer');
     const addHabitBtn = document.getElementById('addHabitBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const monthLabel = document.getElementById('monthLabel');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
 
     // Modal
     const habitModal = document.getElementById('habitModal');
@@ -53,7 +58,7 @@
         habits = [
             {
                 id: 'habit-1',
-                name: 'Read 30 minutes',
+                name: 'Read 30 min',
                 icon: 'fa-book',
                 color: '#6c5ce7',
                 history: {}
@@ -74,8 +79,20 @@
             }
         ];
         
-        // Mark today as completed for demo
+        // Mark some demo data
+        const demoHistory = {};
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            // 80% chance of completion for demo
+            if (Math.random() > 0.2) {
+                demoHistory[dateStr] = true;
+            }
+        }
         habits.forEach(habit => {
+            habit.history = {...demoHistory};
+            // Make sure today is completed
             habit.history[todayStr] = true;
         });
         
@@ -85,18 +102,6 @@
     // Generate unique ID
     function generateId(prefix = '') {
         return prefix + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
-    }
-
-    // Get last 30 days
-    function getLast30Days() {
-        const days = [];
-        const today = new Date();
-        for (let i = 29; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            days.push(date);
-        }
-        return days;
     }
 
     // Format date to YYYY-MM-DD
@@ -155,6 +160,34 @@
             }
         }
         return streak;
+    }
+
+    // Get days for the current month view
+    function getMonthDays() {
+        const days = [];
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const today = new Date();
+        
+        // Start from the first day of the month
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const date = new Date(currentYear, currentMonth, d);
+            days.push(date);
+        }
+        
+        return days;
+    }
+
+    // Get last 30 days from today
+    function getLast30Days() {
+        const days = [];
+        const today = new Date();
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            days.push(date);
+        }
+        return days;
     }
 
     // Render habits
@@ -224,13 +257,13 @@
         });
     }
 
-    // Render calendar
+    // Render heatmap calendar
     function renderCalendar() {
         if (!habits || habits.length === 0) {
             calendarContainer.innerHTML = `
                 <div class="empty-state" style="padding: 2rem 1rem;">
                     <i class="fas fa-calendar-alt"></i>
-                    <p>Add habits to see your calendar</p>
+                    <p>Add habits to see your heatmap</p>
                 </div>
             `;
             return;
@@ -239,30 +272,39 @@
         const days = getLast30Days();
         const todayStr = formatDate(new Date());
         
-        // For each habit, create a row in the calendar
-        let html = '<div class="calendar-grid">';
+        // Update month label
+        const today = new Date();
+        monthLabel.textContent = `${today.toLocaleString('default', { month: 'long' })} ${today.getFullYear()}`;
+
+        let html = '';
         
-        // Header row with day numbers
-        html += `<div class="calendar-day" style="background: transparent; color: #b2bec3; font-weight: 700; font-size: 0.7rem;">Day</div>`;
+        // Day labels
+        html += '<div class="day-labels">';
+        html += '<div class="day-label">Habit</div>';
         days.forEach(day => {
             const dayNum = day.getDate();
             const isToday = formatDate(day) === todayStr;
             html += `
-                <div class="calendar-day" style="background: transparent; color: #b2bec3; font-weight: 600; font-size: 0.7rem; ${isToday ? 'border-color: #6c5ce7;' : ''}">
+                <div class="day-label" style="${isToday ? 'color: #6c5ce7; font-weight: 700;' : ''}">
                     ${dayNum}
                 </div>
             `;
         });
-        
-        // For each habit, show completion status
+        html += '</div>';
+
+        // Heatmap rows for each habit
         habits.forEach(habit => {
-            html += `<div class="calendar-day" style="background: transparent; color: #2d3436; font-weight: 600; font-size: 0.65rem; text-align: left; justify-content: flex-start; padding-left: 0.3rem;">
-                <span style="display: flex; align-items: center; gap: 0.2rem;">
-                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${habit.color};"></span>
-                    ${habit.icon ? `<i class="fas ${habit.icon}" style="font-size: 0.6rem;"></i>` : ''}
-                </span>
-            </div>`;
+            html += `<div class="heatmap-row">`;
             
+            // Habit label
+            html += `
+                <div class="heatmap-label" title="${habit.name}">
+                    <span class="habit-dot" style="background: ${habit.color};"></span>
+                    <span>${habit.name.substring(0, 8)}</span>
+                </div>
+            `;
+            
+            // Cells for each day
             days.forEach(day => {
                 const dateStr = formatDate(day);
                 const isCompleted = isHabitCompleted(habit, dateStr);
@@ -270,37 +312,75 @@
                 const isFuture = day > new Date();
                 
                 let status = 'future';
-                let tooltip = '';
+                let tooltipText = `${habit.name}: `;
                 
                 if (isFuture) {
                     status = 'future';
-                    tooltip = 'Future';
+                    tooltipText += 'Future';
                 } else if (isCompleted) {
                     status = 'completed';
-                    tooltip = 'Completed';
+                    tooltipText += '✅ Completed';
                 } else {
                     status = 'missed';
-                    tooltip = 'Missed';
+                    tooltipText += '❌ Missed';
                 }
                 
+                const dayNum = day.getDate();
+                const month = day.toLocaleString('default', { month: 'short' });
+                const year = day.getFullYear();
+                
                 html += `
-                    <div class="calendar-day ${status} ${isToday ? 'today' : ''}" title="${habit.name}: ${tooltip}">
-                        <span class="day-status">${isCompleted ? '✓' : isFuture ? '·' : '✗'}</span>
-                        <span class="day-tooltip">${habit.name}: ${tooltip}</span>
+                    <div class="heatmap-cell ${status} ${isToday ? 'today' : ''}" 
+                         onclick="window.toggleDay && window.toggleDay('${habit.id}', '${dateStr}')"
+                         title="${tooltipText}">
+                        <span class="cell-tooltip">
+                            ${month} ${dayNum}, ${year}<br>
+                            ${habit.name}<br>
+                            ${isFuture ? 'Future' : isCompleted ? '✅ Completed' : '❌ Missed'}
+                        </span>
                     </div>
                 `;
             });
+            
+            html += '</div>';
         });
-        
-        html += '</div>';
+
         calendarContainer.innerHTML = html;
     }
 
-    // Render all
-    function renderAll() {
-        renderHabits();
-        renderCalendar();
-    }
+    // Toggle day completion
+    window.toggleDay = function(habitId, dateStr) {
+        const habit = habits.find(h => h.id === habitId);
+        if (!habit) return;
+        
+        const today = new Date();
+        const todayStr = formatDate(today);
+        const targetDate = new Date(dateStr);
+        
+        // Don't allow toggling future dates or past dates (only today)
+        if (targetDate > today) {
+            alert('Cannot toggle future dates');
+            return;
+        }
+        
+        if (dateStr !== todayStr) {
+            alert('You can only toggle today\'s status');
+            return;
+        }
+        
+        if (!habit.history) {
+            habit.history = {};
+        }
+        
+        if (habit.history[dateStr]) {
+            delete habit.history[dateStr];
+        } else {
+            habit.history[dateStr] = true;
+        }
+        
+        saveData();
+        renderAll();
+    };
 
     // Toggle habit for today
     function toggleHabitToday(habitId) {
@@ -321,6 +401,12 @@
         
         saveData();
         renderAll();
+    }
+
+    // Render all
+    function renderAll() {
+        renderHabits();
+        renderCalendar();
     }
 
     // Save habit (add or update)
@@ -408,6 +494,19 @@
         }
     }
 
+    // Change month
+    function changeMonth(delta) {
+        currentMonth += delta;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        } else if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        renderAll();
+    }
+
     // Icon selection
     iconOptions.forEach(opt => {
         opt.addEventListener('click', function() {
@@ -433,6 +532,8 @@
 
     addHabitBtn.addEventListener('click', () => openHabitModal());
     resetBtn.addEventListener('click', resetAll);
+    prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+    nextMonthBtn.addEventListener('click', () => changeMonth(1));
 
     // Close modal on outside click
     habitModal.addEventListener('click', function(e) {

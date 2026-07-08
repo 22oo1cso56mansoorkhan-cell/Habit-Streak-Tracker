@@ -37,14 +37,18 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Calendar -->
+            <!-- Right Panel: Calendar Heatmap -->
             <div class="calendar-panel">
                 <div class="calendar-header">
-                    <h3><i class="fas fa-calendar-alt"></i> 30-Day History</h3>
-                    <div class="calendar-legend">
-                        <span><span class="legend-dot completed"></span> Completed</span>
-                        <span><span class="legend-dot missed"></span> Missed</span>
-                        <span><span class="legend-dot future"></span> Future</span>
+                    <h3><i class="fas fa-calendar-alt"></i> 30-Day Heatmap</h3>
+                    <div class="calendar-controls">
+                        <button class="btn btn-small" id="prevMonthBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="monthLabel" style="font-weight: 600; color: #2d3436; min-width: 100px; text-align: center;"></span>
+                        <button class="btn btn-small" id="nextMonthBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="calendar-container" id="calendarContainer">
