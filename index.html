@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit Streak Tracker</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-fire" style="color: #e17055;"></i>
+                    Habit Streak Tracker
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="addHabitBtn">
+                        <i class="fas fa-plus"></i> Add Habit
+                    </button>
+                    <button class="btn btn-outline" id="resetBtn">
+                        <i class="fas fa-trash"></i> Reset All
+                    </button>
+                </div>
+            </div>
+            <p class="subhead">Track your daily habits and maintain your streaks</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Panel: Habit List -->
+            <div class="habits-panel">
+                <div class="habits-container" id="habitsContainer">
+                    <!-- Habits will be dynamically rendered here -->
+                </div>
+            </div>
+
+            <!-- Right Panel: Calendar -->
+            <div class="calendar-panel">
+                <div class="calendar-header">
+                    <h3><i class="fas fa-calendar-alt"></i> 30-Day History</h3>
+                    <div class="calendar-legend">
+                        <span><span class="legend-dot completed"></span> Completed</span>
+                        <span><span class="legend-dot missed"></span> Missed</span>
+                        <span><span class="legend-dot future"></span> Future</span>
+                    </div>
+                </div>
+                <div class="calendar-container" id="calendarContainer">
+                    <!-- Calendar will be dynamically rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding habit -->
+    <div class="modal" id="habitModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Add New Habit</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="habitNameInput"><i class="fas fa-tag"></i> Habit Name *</label>
+                    <input type="text" id="habitNameInput" placeholder="e.g., Read 30 minutes" />
+                </div>
+                <div class="form-group">
+                    <label for="habitIconInput"><i class="fas fa-icons"></i> Icon</label>
+                    <div class="icon-selector" id="iconSelector">
+                        <span class="icon-option active" data-icon="fa-book"><i class="fas fa-book"></i></span>
+                        <span class="icon-option" data-icon="fa-dumbbell"><i class="fas fa-dumbbell"></i></span>
+                        <span class="icon-option" data-icon="fa-running"><i class="fas fa-running"></i></span>
+                        <span class="icon-option" data-icon="fa-apple-alt"><i class="fas fa-apple-alt"></i></span>
+                        <span class="icon-option" data-icon="fa-bed"><i class="fas fa-bed"></i></span>
+                        <span class="icon-option" data-icon="fa-code"><i class="fas fa-code"></i></span>
+                        <span class="icon-option" data-icon="fa-paint-brush"><i class="fas fa-paint-brush"></i></span>
+                        <span class="icon-option" data-icon="fa-music"><i class="fas fa-music"></i></span>
+                        <span class="icon-option" data-icon="fa-yoga"><i class="fas fa-yoga"></i></span>
+                        <span class="icon-option" data-icon="fa-water"><i class="fas fa-water"></i></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="habitColorInput"><i class="fas fa-palette"></i> Color</label>
+                    <div class="color-options" id="habitColorOptions">
+                        <div class="color-option active" style="background: #6c5ce7;" data-color="#6c5ce7"></div>
+                        <div class="color-option" style="background: #00b894;" data-color="#00b894"></div>
+                        <div class="color-option" style="background: #fdcb6e;" data-color="#fdcb6e"></div>
+                        <div class="color-option" style="background: #e17055;" data-color="#e17055"></div>
+                        <div class="color-option" style="background: #74b9ff;" data-color="#74b9ff"></div>
+                        <div class="color-option" style="background: #fd79a8;" data-color="#fd79a8"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelModal">Cancel</button>
+                <button class="btn btn-primary" id="saveHabitBtn"><i class="fas fa-save"></i> Add Habit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
